@@ -4,6 +4,14 @@
 
 # COMMAND ----------
 
+# MAGIC %run "../includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/common_functions"
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC #### Step 1 - Read JSON files into a DataFrame
 
@@ -27,7 +35,7 @@ qualifying_schema = StructType(fields=[
 
 # COMMAND ----------
 
-qualifying_df = spark.read.json("/mnt/dataformula1lake/raw/qualifying",
+qualifying_df = spark.read.json(f"{raw_folder_path}/qualifying",
                                 schema=qualifying_schema,
                                 multiLine=True)
 
@@ -40,15 +48,14 @@ qualifying_df = spark.read.json("/mnt/dataformula1lake/raw/qualifying",
 
 # COMMAND ----------
 
-from pyspark.sql.functions import current_timestamp
+qualifying_renamed_df = qualifying_df.withColumnRenamed("qualifyingId", "qualifying_id") \
+.withColumnRenamed("raceId", "race_id") \
+.withColumnRenamed("driverId", "driver_id") \
+.withColumnRenamed("constructorId", "constructor_id")
 
 # COMMAND ----------
 
-qualifying_final_df = qualifying_df.withColumnRenamed("qualifyingId", "qualifying_id") \
-.withColumnRenamed("raceId", "race_id") \
-.withColumnRenamed("driverId", "driver_id") \
-.withColumnRenamed("constructorId", "constructor_id") \
-.withColumn("ingestion_date", current_timestamp())
+qualifying_final_df = add_ingestion_date(qualifying_renamed_df)
 
 # COMMAND ----------
 
@@ -57,4 +64,4 @@ qualifying_final_df = qualifying_df.withColumnRenamed("qualifyingId", "qualifyin
 
 # COMMAND ----------
 
-qualifying_final_df.write.parquet("/mnt/dataformula1lake/processed/qualifying", mode="overwrite")
+qualifying_final_df.write.parquet(f"{processed_folder_path}/qualifying", mode="overwrite")

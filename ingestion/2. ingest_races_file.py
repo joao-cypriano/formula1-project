@@ -4,6 +4,14 @@
 
 # COMMAND ----------
 
+# MAGIC %run "../includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/common_functions"
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC #### Step 1 - Read csv and create DataFrame
 
@@ -26,7 +34,7 @@ races_schema = StructType(fields=[
 
 # COMMAND ----------
 
-races_df = spark.read.csv("/mnt/dataformula1lake/raw/races.csv",
+races_df = spark.read.csv(f"{raw_folder_path}/races.csv",
                          header=True,
                          schema=races_schema)
 
@@ -80,11 +88,7 @@ races_timestamp_df = races_renamed_df.withColumn("race_timestamp", to_timestamp(
 
 # COMMAND ----------
 
-from pyspark.sql.functions import current_timestamp
-
-# COMMAND ----------
-
-races_final_df = races_timestamp_df.withColumn("ingestion_date", current_timestamp())
+races_final_df = add_ingestion_date(races_timestamp_df)
 
 # COMMAND ----------
 
@@ -93,4 +97,4 @@ races_final_df = races_timestamp_df.withColumn("ingestion_date", current_timesta
 
 # COMMAND ----------
 
-races_final_df.write.partitionBy("race_year").parquet("/mnt/dataformula1lake/processed/races", mode="overwrite")
+races_final_df.write.partitionBy("race_year").parquet(f"{processed_folder_path}/races", mode="overwrite")

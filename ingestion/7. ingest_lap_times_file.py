@@ -4,6 +4,14 @@
 
 # COMMAND ----------
 
+# MAGIC %run "../includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/common_functions"
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC #### Step 1 - Read csv files into a DataFrame
 
@@ -24,7 +32,7 @@ lap_times_schema = StructType(fields=[
 
 # COMMAND ----------
 
-lap_times_df = spark.read.csv("/mnt/dataformula1lake/raw/lap_times", schema=lap_times_schema)
+lap_times_df = spark.read.csv(f"{raw_folder_path}/lap_times", schema=lap_times_schema)
 
 # COMMAND ----------
 
@@ -35,13 +43,12 @@ lap_times_df = spark.read.csv("/mnt/dataformula1lake/raw/lap_times", schema=lap_
 
 # COMMAND ----------
 
-from pyspark.sql.functions import current_timestamp
+lap_times_renamed_df = lap_times_df.withColumnRenamed("driverId", "driver_id") \
+.withColumnRenamed("raceId", "race_id")
 
 # COMMAND ----------
 
-lap_times_final_df = lap_times_df.withColumnRenamed("driverId", "driver_id") \
-.withColumnRenamed("raceId", "race_id") \
-.withColumn("ingestion_date", current_timestamp())
+lap_times_final_df = add_ingestion_date(lap_times_renamed_df)
 
 # COMMAND ----------
 
@@ -50,4 +57,4 @@ lap_times_final_df = lap_times_df.withColumnRenamed("driverId", "driver_id") \
 
 # COMMAND ----------
 
-lap_times_final_df.write.parquet("/mnt/dataformula1lake/processed/lap_times", mode="overwrite")
+lap_times_final_df.write.parquet(f"{processed_folder_path}/lap_times", mode="overwrite")

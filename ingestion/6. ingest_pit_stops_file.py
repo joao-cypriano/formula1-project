@@ -4,6 +4,14 @@
 
 # COMMAND ----------
 
+# MAGIC %run "../includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/common_functions"
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC #### Step 1 - Read file into a DataFrame
 
@@ -25,7 +33,7 @@ pit_stops_schema = StructType(fields=[
 
 # COMMAND ----------
 
-pit_stops_df = spark.read.json("/mnt/dataformula1lake/raw/pit_stops.json", schema=pit_stops_schema, multiLine=True)
+pit_stops_df = spark.read.json(f"{raw_folder_path}/pit_stops.json", schema=pit_stops_schema, multiLine=True)
 
 # COMMAND ----------
 
@@ -36,13 +44,12 @@ pit_stops_df = spark.read.json("/mnt/dataformula1lake/raw/pit_stops.json", schem
 
 # COMMAND ----------
 
-from pyspark.sql.functions import current_timestamp
+pit_stops_renamed_df = pit_stops_df.withColumnRenamed("driverId", "driver_id") \
+.withColumnRenamed("raceId", "race_id")
 
 # COMMAND ----------
 
-pit_stops_final_df = pit_stops_df.withColumnRenamed("driverId", "driver_id") \
-.withColumnRenamed("raceId", "race_id") \
-.withColumn("ingestion_date", current_timestamp())
+pit_stops_final_df = add_ingestion_date(pit_stops_renamed_df)
 
 # COMMAND ----------
 
@@ -51,4 +58,4 @@ pit_stops_final_df = pit_stops_df.withColumnRenamed("driverId", "driver_id") \
 
 # COMMAND ----------
 
-pit_stops_final_df.write.parquet("/mnt/dataformula1lake/processed/pit_stops", mode="overwrite")
+pit_stops_final_df.write.parquet(f"{processed_folder_path}/pit_stops", mode="overwrite")

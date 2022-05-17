@@ -4,6 +4,14 @@
 
 # COMMAND ----------
 
+# MAGIC %run "../includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/common_functions"
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC #### Step 1 - Read data into a DataFrame
 
@@ -33,7 +41,7 @@ drivers_schema = StructType(fields=[
 
 # COMMAND ----------
 
-drivers_df = spark.read.json("/mnt/dataformula1lake/raw/drivers.json",
+drivers_df = spark.read.json(f"{raw_folder_path}/drivers.json",
                        schema=drivers_schema)
 
 # COMMAND ----------
@@ -47,14 +55,17 @@ drivers_df = spark.read.json("/mnt/dataformula1lake/raw/drivers.json",
 
 # COMMAND ----------
 
-from pyspark.sql.functions import col, concat, current_timestamp, lit
+from pyspark.sql.functions import col, concat, lit
 
 # COMMAND ----------
 
 drivers_with_columns_df = drivers_df.withColumnRenamed("driverId", "driver_id") \
 .withColumnRenamed("driverRef", "driver_ref") \
-.withColumn("ingestion_date", current_timestamp()) \
 .withColumn("name", concat(col("name.forename"), lit(" "), col("name.surname")))
+
+# COMMAND ----------
+
+drivers_with_all_columns_df = add_ingestion_date(drivers_with_columns_df)
 
 # COMMAND ----------
 
@@ -64,7 +75,7 @@ drivers_with_columns_df = drivers_df.withColumnRenamed("driverId", "driver_id") 
 
 # COMMAND ----------
 
-drivers_final_df = drivers_with_columns_df.drop(col("url"))
+drivers_final_df = drivers_with_all_columns_df.drop(col("url"))
 
 # COMMAND ----------
 
@@ -73,4 +84,4 @@ drivers_final_df = drivers_with_columns_df.drop(col("url"))
 
 # COMMAND ----------
 
-drivers_final_df.write.parquet("/mnt/dataformula1lake/processed/drivers", mode="overwrite")
+drivers_final_df.write.parquet(f"{processed_folder_path}/drivers", mode="overwrite")
