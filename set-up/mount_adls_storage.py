@@ -30,8 +30,20 @@ mount_adls("processed")
 
 # COMMAND ----------
 
+mount_adls("presentation")
+
+# COMMAND ----------
+
 dbutils.fs.ls("/mnt/dataformula1lake/raw")
 
 # COMMAND ----------
 
 dbutils.fs.ls("/mnt/dataformula1lake/processed")
+
+# COMMAND ----------
+
+dbutils.fs.ls("/mnt/dataformula1lake/presentation")
+
+# COMMAND ----------
+
+
