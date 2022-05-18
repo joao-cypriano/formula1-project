@@ -4,6 +4,11 @@
 
 # COMMAND ----------
 
+dbutils.widgets.text("p_data_source", "")
+v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
 # MAGIC %run "../includes/configuration"
 
 # COMMAND ----------
@@ -64,9 +69,14 @@ races_selected_df = races_df.select(col("raceId"),
 
 # COMMAND ----------
 
+from pyspark.sql.functions import lit
+
+# COMMAND ----------
+
 races_renamed_df = races_selected_df.withColumnRenamed("raceId", "race_id") \
 .withColumnRenamed("year", "race_year") \
-.withColumnRenamed("circuitId", "circuit_id")
+.withColumnRenamed("circuitId", "circuit_id") \
+.withColumn("data_source", lit(v_data_source))
 
 # COMMAND ----------
 
@@ -75,7 +85,7 @@ races_renamed_df = races_selected_df.withColumnRenamed("raceId", "race_id") \
 
 # COMMAND ----------
 
-from pyspark.sql.functions import lit, to_timestamp, concat
+from pyspark.sql.functions import to_timestamp, concat
 
 # COMMAND ----------
 
@@ -98,3 +108,7 @@ races_final_df = add_ingestion_date(races_timestamp_df)
 # COMMAND ----------
 
 races_final_df.write.partitionBy("race_year").parquet(f"{processed_folder_path}/races", mode="overwrite")
+
+# COMMAND ----------
+
+dbutils.notebook.exit("Success")
