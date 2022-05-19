@@ -81,4 +81,4 @@ final_df = add_ingestion_date(selected_df)
 
 # COMMAND ----------
 
-final_df.write.parquet(f"{presentation_folder_path}/race_results", mode="overwrite")
+final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_presentation.race_results")
