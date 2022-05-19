@@ -67,7 +67,8 @@ race_results_df = results_df \
 
 # COMMAND ----------
 
-selected_df = race_results_df.select("race_year", "race_name", "race_date", "circuit_location", "driver_name", "driver_number", "driver_nationality", "team", "grid", "fastest_lap", "race_time", "points")
+selected_df = race_results_df.select("race_year", "race_name", "race_date", "circuit_location", "driver_name", "driver_number", "driver_nationality",
+                                     "team", "grid", "fastest_lap", "race_time", "points", "position")
 
 # COMMAND ----------
 
