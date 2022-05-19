@@ -22,7 +22,7 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
-constructors_schema = "constructorId INTEGER, constructorRef STRING, name STRING, nationality STRING, url String"
+constructors_schema = "constructorId INTEGER, constructorRef STRING, name STRING, nationality STRING, url STRING"
 
 # COMMAND ----------
 
