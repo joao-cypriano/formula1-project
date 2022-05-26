@@ -1,6 +1,11 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC ### Produce constructor standings
+# MAGIC ##### Produce constructor standings
+
+# COMMAND ----------
+
+dbutils.widgets.text("p_file_date", "2021-03-28")
+v_file_date = dbutils.widgets.get("p_file_date")
 
 # COMMAND ----------
 
@@ -8,44 +13,46 @@
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC #### Step 1 - Read info into a DataFrame
-
-# COMMAND ----------
-
-driver_standings_df = spark.read.parquet(f"{presentation_folder_path}/driver_standings")
+# MAGIC %run "../includes/common_functions"
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### Step 2 - Create the DataFrame with the necessary information
+# MAGIC Find race years for which the data is to be reprocessed
 
 # COMMAND ----------
 
-from pyspark.sql.functions import sum
+race_results_df = spark.read.parquet(f"{presentation_folder_path}/race_results") \
+.filter(f"file_date = '{v_file_date}'") 
 
-constructor_standings_df = driver_standings_df \
+# COMMAND ----------
+
+race_year_list = df_column_to_list(race_results_df, 'race_year')
+
+# COMMAND ----------
+
+from pyspark.sql.functions import col
+
+race_results_df = spark.read.parquet(f"{presentation_folder_path}/race_results") \
+.filter(col("race_year").isin(race_year_list))
+
+# COMMAND ----------
+
+from pyspark.sql.functions import sum, when, count, col
+
+constructor_standings_df = race_results_df \
 .groupBy("race_year", "team") \
-.agg(sum("total_points").alias("team_points"), sum("wins").alias("team_wins"))
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC #### Step 3 - Create the rank column
+.agg(sum("points").alias("total_points"),
+     count(when(col("position") == 1, True)).alias("wins"))
 
 # COMMAND ----------
 
 from pyspark.sql.window import Window
-from pyspark.sql.functions import desc, rank
+from pyspark.sql.functions import desc, rank, asc
 
-constructor_rank_spec = Window.partitionBy("race_year").orderBy(desc("team_points"), desc("team_wins"))
+constructor_rank_spec = Window.partitionBy("race_year").orderBy(desc("total_points"), desc("wins"))
 final_df = constructor_standings_df.withColumn("rank", rank().over(constructor_rank_spec))
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC #### Step 4 - Write data into a parquet file
-
-# COMMAND ----------
-
-final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_presentation.constructor_standings")
+overwrite_partition(final_df, 'f1_presentation', 'constructor_standings', 'race_year')
