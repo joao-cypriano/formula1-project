@@ -9,6 +9,11 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+dbutils.widgets.text("p_file_date", "2021-03-28")
+v_file_date = dbutils.widgets.get("p_file_date")
+
+# COMMAND ----------
+
 # MAGIC %run "../includes/configuration"
 
 # COMMAND ----------
@@ -49,7 +54,7 @@ results_schema = StructType(fields=[
 
 # COMMAND ----------
 
-results_df = spark.read.json(f"{raw_folder_path}/results.json",
+results_df = spark.read.json(f"{raw_folder_path}/{v_file_date}/results.json",
                             schema=results_schema)
 
 # COMMAND ----------
@@ -84,7 +89,8 @@ results_renamed_df = results_df.withColumnRenamed("resultId", "result_id") \
 .withColumnRenamed("fastestLapTime", "fastest_lap_time") \
 .withColumnRenamed("fastestLapSpeed", "fastest_lap_speed") \
 .drop(col("statusId")) \
-.withColumn("data_source", lit(v_data_source))
+.withColumn("data_source", lit(v_data_source)) \
+.withColumn("file_date", lit(v_file_date))
 
 # COMMAND ----------
 
@@ -97,7 +103,13 @@ results_final_df = add_ingestion_date(results_renamed_df)
 
 # COMMAND ----------
 
-results_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.results")
+for race_id_list in results_final_df.select("race_id").distinct().collect():
+    if (spark._jsparkSession.catalog().tableExists("f1_processed.results")):
+        spark.sql(f"ALTER TABLE f1_processed.results DROP IF EXISTS PARTITION (race_id = {race_id_list.race_id})")
+
+# COMMAND ----------
+
+results_final_df.write.mode("append").partitionBy('race_id').format("parquet").saveAsTable("f1_processed.results")
 
 # COMMAND ----------
 
