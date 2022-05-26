@@ -1,11 +1,16 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC ### Ingest the lap_times folder
+# MAGIC ### Ingest the qualifying folders
 
 # COMMAND ----------
 
-dbutils.widgets.text("p_data_source", "")
+dbutils.widgets.text("p_data_source", "Ergast API")
 v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
+dbutils.widgets.text("p_file_date", "2021-03-28")
+v_file_date = dbutils.widgets.get("p_file_date")
 
 # COMMAND ----------
 
@@ -40,7 +45,7 @@ qualifying_schema = StructType(fields=[
 
 # COMMAND ----------
 
-qualifying_df = spark.read.json(f"{raw_folder_path}/qualifying",
+qualifying_df = spark.read.json(f"{raw_folder_path}/{v_file_date}/qualifying",
                                 schema=qualifying_schema,
                                 multiLine=True)
 
@@ -61,7 +66,8 @@ qualifying_renamed_df = qualifying_df.withColumnRenamed("qualifyingId", "qualify
 .withColumnRenamed("raceId", "race_id") \
 .withColumnRenamed("driverId", "driver_id") \
 .withColumnRenamed("constructorId", "constructor_id") \
-.withColumn("data_source", lit(v_data_source))
+.withColumn("data_source", lit(v_data_source)) \
+.withColumn("data_source", lit(v_file_date))
 
 # COMMAND ----------
 
@@ -74,7 +80,7 @@ qualifying_final_df = add_ingestion_date(qualifying_renamed_df)
 
 # COMMAND ----------
 
-qualifying_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.qualifying")
+overwrite_partition(qualifying_final_df, 'f1_processed', 'qualifying', 'race_id')
 
 # COMMAND ----------
 
