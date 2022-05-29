@@ -93,11 +93,11 @@ circuits_final_df = add_ingestion_date(circuits_renamed_df)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### Step 5 - Write data to datalake as parquet
+# MAGIC #### Step 5 - Write data to datalake as delta
 
 # COMMAND ----------
 
-circuits_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.circuits")
+circuits_final_df.write.mode("overwrite").format("delta").saveAsTable("f1_processed.circuits")
 
 # COMMAND ----------
 

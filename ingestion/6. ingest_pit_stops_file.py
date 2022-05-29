@@ -74,7 +74,8 @@ pit_stops_final_df = add_ingestion_date(pit_stops_renamed_df)
 
 # COMMAND ----------
 
-overwrite_partition(pit_stops_final_df, 'f1_processed', 'pit_stops', 'race_id')
+merge_condition = "tgt.race_id = src.race_id AND tgt.driver_id = src.driver_id AND tgt.stop = src.stop"
+merge_delta_data(pit_stops_final_df, 'f1_processed', 'pit_stops', processed_folder_path, merge_condition, 'race_id')
 
 # COMMAND ----------
 

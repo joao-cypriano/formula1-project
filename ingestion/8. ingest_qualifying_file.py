@@ -62,7 +62,7 @@ from pyspark.sql.functions import lit
 
 # COMMAND ----------
 
-qualifying_renamed_df = qualifying_df.withColumnRenamed("qualifyingId", "qualifying_id") \
+qualifying_renamed_df = qualifying_df.withColumnRenamed("qualifyId", "qualify_id") \
 .withColumnRenamed("raceId", "race_id") \
 .withColumnRenamed("driverId", "driver_id") \
 .withColumnRenamed("constructorId", "constructor_id") \
@@ -80,7 +80,8 @@ qualifying_final_df = add_ingestion_date(qualifying_renamed_df)
 
 # COMMAND ----------
 
-overwrite_partition(qualifying_final_df, 'f1_processed', 'qualifying', 'race_id')
+merge_condition = "tgt.qualify_id = src.qualify_id AND tgt.race_id = src.race_id"
+merge_delta_data(qualifying_final_df, 'f1_processed', 'qualifying', processed_folder_path, merge_condition, 'race_id')
 
 # COMMAND ----------
 

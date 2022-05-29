@@ -92,11 +92,11 @@ drivers_final_df = drivers_with_all_columns_df.drop(col("url"))
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### Step 4 - Save data as parquet type
+# MAGIC #### Step 4 - Save data as delta
 
 # COMMAND ----------
 
-drivers_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.drivers")
+drivers_final_df.write.mode("overwrite").format("delta").saveAsTable("f1_processed.drivers")
 
 # COMMAND ----------
 

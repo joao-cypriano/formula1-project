@@ -109,11 +109,11 @@ races_final_df = add_ingestion_date(races_timestamp_df)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### Step 6 - Write data to datalake as parquet
+# MAGIC #### Step 6 - Write data to datalake as delta
 
 # COMMAND ----------
 
-races_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.races")
+races_final_df.write.mode("overwrite").format("delta").saveAsTable("f1_processed.races")
 
 # COMMAND ----------
 

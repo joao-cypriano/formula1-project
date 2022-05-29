@@ -70,11 +70,11 @@ constructor_final_df = add_ingestion_date(constructor_renamed_df)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### Step 4 - Write data into parquet
+# MAGIC #### Step 4 - Write data into datalake as delta
 
 # COMMAND ----------
 
-constructor_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.constructors")
+constructor_final_df.write.mode("overwrite").format("delta").saveAsTable("f1_processed.constructors")
 
 # COMMAND ----------
 
